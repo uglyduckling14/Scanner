@@ -16,6 +16,7 @@ public class Scanner {
   //------------------------------------------------------------
   HashMap<Character, String> catMap = new HashMap<>();
   ArrayList<TableReader.Transition> transMap = new ArrayList<>();
+  HashMap<String, String> tokenTable = new HashMap<>();
   //------------------------------------------------------------
   // TODO: build your tables in the constructor and implement
   // the get methods.
@@ -49,6 +50,7 @@ public class Scanner {
 
     // Build the token types table
     for (TableReader.TokenType tt : tableReader.getTokens()) {
+      tokenTable.put(tt.getState(), tt.getType());
       System.out.println("State " + tt.getState()
               + " accepts with the lexeme being of type " + tt.getType());
     }
@@ -61,7 +63,7 @@ public class Scanner {
    * or two. You should not have any character literals in here such as 'r' or '3'.
    */
   public String getCategory(Character c) {
-    if(catMap.get(c) == null){
+    if(!catMap.containsKey(c)){
       return "not in alphabet";
     }
     return catMap.get(c);
@@ -88,7 +90,10 @@ public class Scanner {
    * Do not hardcode any state names or token types.
    */
   public String getTokenType(String state) {
-    return "";
+    if(tokenTable.containsKey(state)){
+      return tokenTable.get(state);
+    }
+    return "error";
   }
 
   //------------------------------------------------------------
