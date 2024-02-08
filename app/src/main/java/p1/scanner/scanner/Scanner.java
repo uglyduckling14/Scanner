@@ -107,7 +107,56 @@ public class Scanner {
     // TODO: get a single token. This is an implementation of the nextToken
     // algorithm given in class. You may *not* use TableReader in this
     // function. Return null if there is a lexical error.
-    return null;
+    /*
+    r42[eof]
+    initial state= s0
+    lexeme
+    current char
+    category
+    stack = clear stack, push "bad"
+    while state != error state:
+      next char:
+      lexeme = lexeme+char
+      if state within accept states:
+        clear stack
+       push(state)
+       assign character category
+       assign state a category
+     while state != in acceptance state and state != bad) do:
+      state = pop()
+      truncate lexeme
+      go back to actual char
+     if state is accept state
+      return type of state
+     else return invalid
+     */
+    char cur = ' ';
+    String category = "";
+    String state = "s0";
+    StringBuilder lexeme= new StringBuilder();
+    ArrayList<String> nextMap = new ArrayList<>();
+    nextMap.clear();
+
+    while (state != "") {
+      cur = ss.next();
+      lexeme.append(cur);
+      if(getTokenType(state) != "error"){
+          nextMap.clear();
+      }
+      nextMap.add(state);
+      category = getCategory(cur);
+      state = getNewState(state,category);
+    }
+    while(getTokenType(state) == "error" && !state.equals("error")){
+      state = nextMap.remove(nextMap.size()-1);
+      lexeme = new StringBuilder("");
+      ss.rollback();
+    }
+    if(getTokenType(state) != "error"){
+      return new Token(getTokenType(state), lexeme.toString());
+    }else {
+      return null;
+    }
   }
 
 }
