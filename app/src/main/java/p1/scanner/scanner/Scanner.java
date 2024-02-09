@@ -2,34 +2,21 @@ package p1.scanner.scanner;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
 
 /**
  * This is the file you will modify.
  */
 public class Scanner {
-
-  //------------------------------------------------------------
-  // TODO: declare the HashMaps that you will use to store
-  // your tables. Also declare the start state.
-  //------------------------------------------------------------
   HashMap<Character, String> catMap = new HashMap<>();
   ArrayList<TableReader.Transition> transMap = new ArrayList<>();
   HashMap<String, String> tokenTable = new HashMap<>();
-  //------------------------------------------------------------
-  // TODO: build your tables in the constructor and implement
-  // the get methods.
-  //------------------------------------------------------------
+  ArrayList<String> stack = new ArrayList<>();
 
   /**
    * Builds the tables needed for the scanner.
    */
   public Scanner(TableReader tableReader) {
-    // TODO: starting with the skeleton code below, build the
-    // classifer, transition and token type tables. You will need
-    // to also implement the test functions below once you have your
-    // tables built.
 
     // Build catMap, mapping a character to a category.
     for (TableReader.CharCat cat : tableReader.getClassifier()) {
@@ -48,7 +35,7 @@ public class Scanner {
               + " --> " + t.getToStateName());
     }
 
-    // Build the token types table
+    //Build the token types table
     for (TableReader.TokenType tt : tableReader.getTokens()) {
       tokenTable.put(tt.getState(), tt.getType());
       System.out.println("State " + tt.getState()
@@ -96,22 +83,15 @@ public class Scanner {
     return "error";
   }
 
-  //------------------------------------------------------------
-  // TODO: implement nextToken
-  //------------------------------------------------------------
-
   /**
    * Return the next token or null if there's a lexical error.
    */
   public Token nextToken(ScanStream ss) {
-    // TODO: get a single token. This is an implementation of the nextToken
-    // algorithm given in class. You may *not* use TableReader in this
-    // function. Return null if there is a lexical error.
     /*
     r42[eof]
     initial state= s0
     lexeme
-    current char
+    current Token
     category
     stack = clear stack, push "bad"
     while state != error state:
@@ -130,33 +110,33 @@ public class Scanner {
       return type of state
      else return invalid
      */
-    char cur = ' ';
-    String category = "";
-    String state = "s0";
-    StringBuilder lexeme= new StringBuilder();
-    ArrayList<String> nextMap = new ArrayList<>();
-    nextMap.clear();
 
-    while (state != "") {
+    String state= transMap.get(0).getFromStateName();
+    String lexeme="";
+    char cur;
+    String category;
+    stack.clear();
+    stack.add("bad");
+    while(!Objects.equals(state, "error") && !ss.eof()){
       cur = ss.next();
-      lexeme.append(cur);
-      if(getTokenType(state) != "error"){
-          nextMap.clear();
+      lexeme+= cur;
+      if(!Objects.equals(getTokenType(state), "error")){
+        stack.clear();
       }
-      nextMap.add(state);
+      stack.add(state);
       category = getCategory(cur);
       state = getNewState(state,category);
     }
-    while(getTokenType(state) == "error" && !state.equals("error")){
-      state = nextMap.remove(nextMap.size()-1);
-      lexeme = new StringBuilder("");
+    while(Objects.equals((state), "error") && !Objects.equals(state, "bad")){
+      state = stack.get(stack.size()-1);
+      stack.remove(stack.size()-1);
+      lexeme = lexeme.substring(0, lexeme.length()-1);
       ss.rollback();
     }
-    if(getTokenType(state) != "error"){
-      return new Token(getTokenType(state), lexeme.toString());
-    }else {
-      return null;
+    if(!Objects.equals(getTokenType(state), "error")){
+      return new Token(getTokenType(state),lexeme);
     }
+    return null;
   }
 
 }
